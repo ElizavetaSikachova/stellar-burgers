@@ -1,20 +1,53 @@
 import { configureStore } from '@reduxjs/toolkit';
-
+import { reducers } from '@slices';
 import {
   TypedUseSelectorHook,
   useDispatch as dispatchHook,
   useSelector as selectorHook
 } from 'react-redux';
 
-const rootReducer = () => {}; // Заменить на импорт настоящего редьюсера
+// ✅ ДИАГНОСТИКА - проверяем каждый reducer
+console.log('🔍=== REDUX DIAGNOSTICS START ===');
+console.log('🔍 reducers object:', reducers);
+console.log('🔍 reducers keys:', Object.keys(reducers));
 
-const store = configureStore({
-  reducer: rootReducer,
-  devTools: process.env.NODE_ENV !== 'production'
+// Проверяем каждый reducer
+Object.entries(reducers).forEach(([key, reducer]) => {
+  console.log(`🔍 Checking reducer "${key}":`, {
+    isFunction: typeof reducer === 'function',
+    reducer
+  });
+
+  // Проверяем, что reducer не возвращает undefined при инициализации
+  try {
+    const initState = reducer(undefined, { type: '@@INIT' });
+    console.log(`🔍 Reducer "${key}" init state:`, initState);
+
+    if (initState === undefined) {
+      console.error(`❌❌❌ REDUCER "${key}" RETURNED UNDEFINED ON INIT!`);
+    }
+  } catch (error) {
+    console.error(`❌❌❌ REDUCER "${key}" THREW ERROR ON INIT:`, error);
+  }
 });
 
-export type RootState = ReturnType<typeof rootReducer>;
+console.log('🔍=== END DIAGNOSTICS ===');
 
+const store = configureStore({
+  reducer: reducers,
+  devTools: true, // ✅ Включаем для отладки
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+      immutableCheck: {
+        warnAfter: 128,
+        ignoredActionPaths: ['meta.arg', 'payload.token'],
+        ignoredPaths: []
+      }
+    })
+});
+
+export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
 export const useDispatch: () => AppDispatch = () => dispatchHook();

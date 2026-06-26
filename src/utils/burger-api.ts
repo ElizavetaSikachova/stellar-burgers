@@ -115,6 +115,7 @@ type TNewOrder = {
   updatedAt: string;
   number: number;
   price: number;
+  ingredients: string[];
 };
 
 type TNewOrderResponse = TServerResponse<{

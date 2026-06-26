@@ -2,27 +2,38 @@ import { forwardRef, useMemo } from 'react';
 import { TIngredientsCategoryProps } from './type';
 import { TIngredient } from '@utils-types';
 import { IngredientsCategoryUI } from '../ui/ingredients-category';
+import { useSelector } from '../../services/store';
 
 export const IngredientsCategory = forwardRef<
   HTMLUListElement,
   TIngredientsCategoryProps
 >(({ title, titleRef, ingredients }, ref) => {
-  /** TODO: взять переменную из стора */
-  const burgerConstructor = {
-    bun: {
-      _id: ''
-    },
-    ingredients: []
-  };
+  const burgerConstructor = useSelector((state) => state.constructor);
 
   const ingredientsCounters = useMemo(() => {
-    const { bun, ingredients } = burgerConstructor;
+    // ✅ Защита от undefined
+    if (!burgerConstructor) {
+      return {};
+    }
+
+    const { bun, ingredients: ctorIngredients } = burgerConstructor;
     const counters: { [key: string]: number } = {};
-    ingredients.forEach((ingredient: TIngredient) => {
-      if (!counters[ingredient._id]) counters[ingredient._id] = 0;
-      counters[ingredient._id]++;
-    });
-    if (bun) counters[bun._id] = 2;
+
+    // ✅ Проверяем, что ctorIngredients существует и является массивом
+    if (ctorIngredients && Array.isArray(ctorIngredients)) {
+      ctorIngredients.forEach((ingredient: TIngredient) => {
+        if (ingredient && ingredient._id) {
+          if (!counters[ingredient._id]) counters[ingredient._id] = 0;
+          counters[ingredient._id]++;
+        }
+      });
+    }
+
+    // ✅ Проверяем, что bun существует
+    if (bun && bun._id) {
+      counters[bun._id] = 2;
+    }
+
     return counters;
   }, [burgerConstructor]);
 
