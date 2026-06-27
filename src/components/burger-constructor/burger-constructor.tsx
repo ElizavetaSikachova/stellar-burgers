@@ -3,14 +3,14 @@ import { TConstructorIngredient } from '@utils-types';
 import { BurgerConstructorUI } from '@ui';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from '../../services/store';
-import { clearConstructor, clearOrderModal, createOrder } from '@slices';
+import { clearBurgerConstructor, clearOrderModal, createOrder } from '@slices';
 
 export const BurgerConstructor: FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const constructorItems = useSelector((state) => state.constructor);
+  const constructorItems = useSelector((state) => state.burgerConstructor);
   const { orderRequest, orderModalData } = useSelector((state) => state.orders);
   const isAuth = useSelector((state) => state.auth.isAuth);
 
@@ -38,7 +38,7 @@ export const BurgerConstructor: FC = () => {
     const resultAction = await dispatch(createOrder(ingredientsIds));
 
     if (createOrder.fulfilled.match(resultAction)) {
-      dispatch(clearConstructor());
+      dispatch(clearBurgerConstructor());
     }
   };
 

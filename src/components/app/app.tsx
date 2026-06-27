@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from '../../services/store';
 import { getIngredients, getUser } from '@slices';
 import { getCookie } from '../../utils/cookie';
 import styles from './app.module.css';
+import '../../index.css';
 
 import {
   AppHeader,

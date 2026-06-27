@@ -64,3 +64,23 @@
   top: 50%;
   transform: translate(-50%, -50%);
 }
+
+.newOrder { 
+  animation: highlightPulse 5s ease forwards;
+  box-shadow: 0 0 20px 5px #3333FF80;
+}
+
+@keyframes highlightPulse {
+  0% {
+    box-shadow: 0 0 20px 5px #3333FF80;
+    opacity: 1;
+  }
+  70% {
+    box-shadow: 0 0 20px 5px #3333FF80;
+    opacity: 1;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+    opacity: 1;
+  }
+}

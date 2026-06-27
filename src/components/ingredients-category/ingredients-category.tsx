@@ -8,10 +8,9 @@ export const IngredientsCategory = forwardRef<
   HTMLUListElement,
   TIngredientsCategoryProps
 >(({ title, titleRef, ingredients }, ref) => {
-  const burgerConstructor = useSelector((state) => state.constructor);
+  const burgerConstructor = useSelector((state) => state.burgerConstructor);
 
   const ingredientsCounters = useMemo(() => {
-    // ✅ Защита от undefined
     if (!burgerConstructor) {
       return {};
     }
@@ -19,7 +18,6 @@ export const IngredientsCategory = forwardRef<
     const { bun, ingredients: ctorIngredients } = burgerConstructor;
     const counters: { [key: string]: number } = {};
 
-    // ✅ Проверяем, что ctorIngredients существует и является массивом
     if (ctorIngredients && Array.isArray(ctorIngredients)) {
       ctorIngredients.forEach((ingredient: TIngredient) => {
         if (ingredient && ingredient._id) {
@@ -29,7 +27,6 @@ export const IngredientsCategory = forwardRef<
       });
     }
 
-    // ✅ Проверяем, что bun существует
     if (bun && bun._id) {
       counters[bun._id] = 2;
     }

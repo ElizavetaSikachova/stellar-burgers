@@ -7,13 +7,13 @@ import {
 } from 'react-redux';
 
 // ✅ ДИАГНОСТИКА - проверяем каждый reducer
-console.log('🔍=== REDUX DIAGNOSTICS START ===');
-console.log('🔍 reducers object:', reducers);
-console.log('🔍 reducers keys:', Object.keys(reducers));
+console.log('=== REDUX DIAGNOSTICS START ===');
+console.log(' reducers object:', reducers);
+console.log(' reducers keys:', Object.keys(reducers));
 
 // Проверяем каждый reducer
 Object.entries(reducers).forEach(([key, reducer]) => {
-  console.log(`🔍 Checking reducer "${key}":`, {
+  console.log(` Checking reducer "${key}":`, {
     isFunction: typeof reducer === 'function',
     reducer
   });
@@ -21,21 +21,21 @@ Object.entries(reducers).forEach(([key, reducer]) => {
   // Проверяем, что reducer не возвращает undefined при инициализации
   try {
     const initState = reducer(undefined, { type: '@@INIT' });
-    console.log(`🔍 Reducer "${key}" init state:`, initState);
+    console.log(` Reducer "${key}" init state:`, initState);
 
     if (initState === undefined) {
-      console.error(`❌❌❌ REDUCER "${key}" RETURNED UNDEFINED ON INIT!`);
+      console.error(` REDUCER "${key}" RETURNED UNDEFINED ON INIT!`);
     }
   } catch (error) {
-    console.error(`❌❌❌ REDUCER "${key}" THREW ERROR ON INIT:`, error);
+    console.error(` REDUCER "${key}" THREW ERROR ON INIT:`, error);
   }
 });
 
-console.log('🔍=== END DIAGNOSTICS ===');
+console.log('=== END DIAGNOSTICS ===');
 
 const store = configureStore({
   reducer: reducers,
-  devTools: true, // ✅ Включаем для отладки
+  devTools: true,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
@@ -52,5 +52,7 @@ export type AppDispatch = typeof store.dispatch;
 
 export const useDispatch: () => AppDispatch = () => dispatchHook();
 export const useSelector: TypedUseSelectorHook<RootState> = selectorHook;
+
+export const useStore = () => store;
 
 export default store;
