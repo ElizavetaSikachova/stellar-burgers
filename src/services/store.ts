@@ -1,37 +1,23 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { reducers } from '@slices';
 import {
   TypedUseSelectorHook,
   useDispatch as dispatchHook,
   useSelector as selectorHook
 } from 'react-redux';
 
-// ✅ ДИАГНОСТИКА - проверяем каждый reducer
-console.log('=== REDUX DIAGNOSTICS START ===');
-console.log(' reducers object:', reducers);
-console.log(' reducers keys:', Object.keys(reducers));
+import { constructorReducer } from './slices/constructor-slice';
+import { ingredientsReducer } from './slices/ingredients-slice';
+import { feedReducer } from './slices/feed-slice';
+import { ordersReducer } from './slices/orders-slice';
+import { authReducer } from './slices/auth-slice';
 
-// Проверяем каждый reducer
-Object.entries(reducers).forEach(([key, reducer]) => {
-  console.log(` Checking reducer "${key}":`, {
-    isFunction: typeof reducer === 'function',
-    reducer
-  });
-
-  // Проверяем, что reducer не возвращает undefined при инициализации
-  try {
-    const initState = reducer(undefined, { type: '@@INIT' });
-    console.log(` Reducer "${key}" init state:`, initState);
-
-    if (initState === undefined) {
-      console.error(` REDUCER "${key}" RETURNED UNDEFINED ON INIT!`);
-    }
-  } catch (error) {
-    console.error(` REDUCER "${key}" THREW ERROR ON INIT:`, error);
-  }
-});
-
-console.log('=== END DIAGNOSTICS ===');
+const reducers = {
+  burgerConstructor: constructorReducer,
+  ingredients: ingredientsReducer,
+  feed: feedReducer,
+  orders: ordersReducer,
+  auth: authReducer
+};
 
 const store = configureStore({
   reducer: reducers,

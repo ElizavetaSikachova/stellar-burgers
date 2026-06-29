@@ -87,17 +87,25 @@ export const getFeedsApi = () =>
       return Promise.reject(data);
     });
 
-export const getOrdersApi = () =>
-  fetchWithRefresh<TFeedsResponse>(`${URL}/orders`, {
+export const getOrdersApi = () => {
+  const token = getCookie('accessToken');
+  if (!token) {
+    return Promise.reject({
+      success: false,
+      message: 'Отсутствует токен доступа'
+    });
+  }
+  return fetchWithRefresh<TFeedsResponse>(`${URL}/orders`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json;charset=utf-8',
-      authorization: getCookie('accessToken')
+      authorization: token
     } as HeadersInit
   }).then((data) => {
     if (data?.success) return data.orders;
     return Promise.reject(data);
   });
+};
 
 type TOwner = {
   name: string;
@@ -123,12 +131,19 @@ type TNewOrderResponse = TServerResponse<{
   name: string;
 }>;
 
-export const orderBurgerApi = (data: string[]) =>
-  fetchWithRefresh<TNewOrderResponse>(`${URL}/orders`, {
+export const orderBurgerApi = (data: string[]) => {
+  const token = getCookie('accessToken');
+  if (!token) {
+    return Promise.reject({
+      success: false,
+      message: 'Отсутствует токен доступа'
+    });
+  }
+  return fetchWithRefresh<TNewOrderResponse>(`${URL}/orders`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json;charset=utf-8',
-      authorization: getCookie('accessToken')
+      authorization: token
     } as HeadersInit,
     body: JSON.stringify({
       ingredients: data
@@ -137,6 +152,7 @@ export const orderBurgerApi = (data: string[]) =>
     if (data?.success) return data;
     return Promise.reject(data);
   });
+};
 
 type TOrderResponse = TServerResponse<{
   orders: TOrder[];
@@ -225,22 +241,46 @@ export const resetPasswordApi = (data: { password: string; token: string }) =>
 
 type TUserResponse = TServerResponse<{ user: TUser }>;
 
-export const getUserApi = () =>
-  fetchWithRefresh<TUserResponse>(`${URL}/auth/user`, {
+export const getUserApi = () => {
+  const token = getCookie('accessToken');
+  if (!token) {
+    return Promise.reject({
+      success: false,
+      message: 'Отсутствует токен доступа'
+    });
+  }
+  return fetchWithRefresh<TUserResponse>(`${URL}/auth/user`, {
+    method: 'GET',
     headers: {
-      authorization: getCookie('accessToken')
+      'Content-Type': 'application/json;charset=utf-8',
+      authorization: token
     } as HeadersInit
+  }).then((data) => {
+    if (data?.success) return data;
+    return Promise.reject(data);
   });
+};
 
-export const updateUserApi = (user: Partial<TRegisterData>) =>
-  fetchWithRefresh<TUserResponse>(`${URL}/auth/user`, {
+export const updateUserApi = (user: Partial<TRegisterData>) => {
+  const token = getCookie('accessToken');
+  if (!token) {
+    return Promise.reject({
+      success: false,
+      message: 'Отсутствует токен доступа'
+    });
+  }
+  return fetchWithRefresh<TUserResponse>(`${URL}/auth/user`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json;charset=utf-8',
-      authorization: getCookie('accessToken')
+      authorization: token
     } as HeadersInit,
     body: JSON.stringify(user)
+  }).then((data) => {
+    if (data?.success) return data;
+    return Promise.reject(data);
   });
+};
 
 export const logoutApi = () =>
   fetch(`${URL}/auth/logout`, {

@@ -13,8 +13,8 @@ import {
   ResetPassword
 } from '@pages';
 import { useDispatch, useSelector } from '../../services/store';
-import { getIngredients, getUser } from '@slices';
-import { getCookie } from '../../utils/cookie';
+import { getUser } from '../../services/slices/auth-slice';
+import { getIngredients } from '../../services/slices/ingredients-slice';
 import styles from './app.module.css';
 import '../../index.css';
 
@@ -42,9 +42,9 @@ const App = () => {
   useEffect(() => {
     dispatch(getIngredients());
 
-    if (getCookie('accessToken')) {
-      dispatch(getUser());
-    }
+    // Всегда вызываем getUser - он сам проверит токен
+    // Это гарантирует, что isAuthChecked всегда будет установлен
+    dispatch(getUser());
   }, [dispatch]);
 
   const closeModal = () => navigate(-1);

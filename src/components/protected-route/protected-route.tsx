@@ -14,9 +14,9 @@ export const ProtectedRoute: FC<TProtectedRouteProps> = ({
   onlyUnAuth = false
 }) => {
   const location = useLocation();
-  const { isAuth, isLoading } = useSelector((state) => state.auth);
+  const { isAuth, isAuthChecked } = useSelector((state) => state.auth);
 
-  if (isLoading) {
+  if (!isAuthChecked) {
     return <Preloader />;
   }
 
