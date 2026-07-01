@@ -1,15 +1,41 @@
 import { Preloader } from '@ui';
 import { FeedUI } from '@ui-pages';
-import { TOrder } from '@utils-types';
-import { FC } from 'react';
+import { FC, useCallback, useEffect } from 'react';
+import { useDispatch, useSelector } from '../../services/store';
+import { getFeeds, clearNewOrderId } from '@slices'; // ✅ Добавьте clearNewOrderId
 
 export const Feed: FC = () => {
-  /** TODO: взять переменную из стора */
-  const orders: TOrder[] = [];
+  const dispatch = useDispatch();
+  const { orders, isLoading, newOrderId } = useSelector((state) => state.feed);
 
-  if (!orders.length) {
+  const handleGetFeeds = useCallback(() => {
+    dispatch(getFeeds());
+  }, [dispatch]);
+
+  useEffect(() => {
+    handleGetFeeds();
+
+    const intervalId = setInterval(() => {
+      handleGetFeeds();
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [handleGetFeeds]);
+
+  // ✅ Сброс подсветки через 5 секунд после появления нового заказа
+  useEffect(() => {
+    if (newOrderId) {
+      const timer = setTimeout(() => {
+        dispatch(clearNewOrderId());
+      }, 5000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [newOrderId, dispatch]);
+
+  if (isLoading && !orders.length) {
     return <Preloader />;
   }
 
-  <FeedUI orders={orders} handleGetFeeds={() => {}} />;
+  return <FeedUI orders={orders} handleGetFeeds={handleGetFeeds} />;
 };
