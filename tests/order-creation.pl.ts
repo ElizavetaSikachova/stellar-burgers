@@ -33,7 +33,7 @@ test.describe('Order Creation Flow', () => {
   test.beforeEach(async ({ page, context }) => {
     // Set up HAR recording for ingredients
     await context.routeFromHAR('./tests/fixtures/ingredients.har', {
-      url: '**/api/ingredients',
+      url: '**/norma.education-services.ru/api/ingredients',
       update: false
     });
 
@@ -51,10 +51,13 @@ test.describe('Order Creation Flow', () => {
       }
     ]);
 
-    localStorage.setItem('refreshToken', 'mock_refresh_token_12345');
-
     // Transition to constructor page
     await page.goto('/');
+
+    // Set refreshToken in browser context (must be after navigation)
+    await page.evaluate(() => {
+      localStorage.setItem('refreshToken', 'mock_refresh_token_12345');
+    });
   });
 
   test('should build burger and create order', async ({ page }) => {
@@ -74,30 +77,50 @@ test.describe('Order Creation Flow', () => {
       timeout: 5000
     });
 
-    // Add bun to constructor
+    // Add bun to constructor - get name first
     const bunIngredients = await page.locator('[data-testid="burger-ingredient"][data-type="bun"]').all();
     expect(bunIngredients.length).toBeGreaterThan(0);
+    const bunNameText = await bunIngredients[0].locator('p').last().textContent();
     const addBunButton = bunIngredients[0].locator('button:has-text("Добавить")');
     await addBunButton.click();
 
-    // Add main ingredient
+    // Add main ingredient - get name first
     const mainIngredients = await page.locator('[data-testid="burger-ingredient"][data-type="main"]').all();
     expect(mainIngredients.length).toBeGreaterThan(0);
+    const mainNameText = await mainIngredients[0].locator('p').last().textContent();
     const addMainButton = mainIngredients[0].locator('button:has-text("Добавить")');
     await addMainButton.click();
 
-    // Add sauce ingredient
+    // Add sauce ingredient - get name first
     const sauceIngredients = await page.locator('[data-testid="burger-ingredient"][data-type="sauce"]').all();
     expect(sauceIngredients.length).toBeGreaterThan(0);
+    const sauceNameText = await sauceIngredients[0].locator('p').last().textContent();
     const addSauceButton = sauceIngredients[0].locator('button:has-text("Добавить")');
     await addSauceButton.click();
 
-    // Verify constructor has all parts
-    const bunInConstructor = await page.locator('[data-testid="constructor-bun"]');
-    await expect(bunInConstructor).toBeVisible();
+    // Verify constructor has correct bun
+    const bunTopInConstructor = await page.locator('[data-testid="constructor-bun-top"]');
+    await expect(bunTopInConstructor).toBeVisible();
+    await expect(bunTopInConstructor).toContainText(bunNameText || '');
 
+    const bunBottomInConstructor = await page.locator('[data-testid="constructor-bun-bottom"]');
+    await expect(bunBottomInConstructor).toBeVisible();
+    await expect(bunBottomInConstructor).toContainText(bunNameText || '');
+
+    // Verify constructor has correct filling and sauce
     const ingredientsInConstructor = await page.locator('[data-testid="constructor-ingredient"]').all();
-    expect(ingredientsInConstructor.length).toBeGreaterThan(0);
+    expect(ingredientsInConstructor.length).toBeGreaterThanOrEqual(2);
+
+    // Check that main ingredient is present
+    let mainFound = false;
+    for (const ingredient of ingredientsInConstructor) {
+      const text = await ingredient.textContent();
+      if (text?.includes(mainNameText || '')) {
+        mainFound = true;
+        break;
+      }
+    }
+    expect(mainFound).toBe(true);
 
     // Click order button
     const orderButton = await page.locator('button:has-text("Оформить заказ")');
@@ -120,8 +143,18 @@ test.describe('Order Creation Flow', () => {
     await expect(orderNumber).not.toBeVisible();
 
     // Verify constructor is cleared after successful order
-    const emptyConstructor = await page.locator('text=Выберите булки');
-    await expect(emptyConstructor).toBeVisible();
+    // Check that buns are cleared
+    const topBunPlaceholder = page.locator('[data-testid="constructor-bun-top"]');
+    await expect(topBunPlaceholder).not.toBeVisible();
+
+    // Check that ingredients are cleared
+    const ingredientsInConstructorAfter = await page.locator('[data-testid="constructor-ingredient"]').all();
+    expect(ingredientsInConstructorAfter.length).toBe(0);
+
+    // Check placeholder text is visible in proper places
+    const noBunsText = page.locator('text=Выберите булки');
+    const noBunsCount = await noBunsText.count();
+    expect(noBunsCount).toBeGreaterThan(0);
   });
 
   test('should handle modal overlay click for closing', async ({ page }) => {

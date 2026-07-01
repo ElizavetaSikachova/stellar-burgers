@@ -4,7 +4,7 @@ test.describe('Burger Constructor Page', () => {
   test.beforeEach(async ({ page, context }) => {
     // Перехватываем запрос на ингредиенты и возвращаем моковые данные
     await context.routeFromHAR('./tests/fixtures/ingredients.har', {
-      url: '**/api/ingredients',
+      url: '**/norma.education-services.ru/api/ingredients',
       update: false
     });
 
@@ -28,21 +28,31 @@ test.describe('Burger Constructor Page', () => {
       timeout: 5000
     });
 
-    // Находим булку (первую с типом bun) и кликаем на кнопку добавления
+    // Находим булку (первую с типом bun) и получаем ее имя
     const bunIngredients = await page.locator('[data-testid="burger-ingredient"][data-type="bun"]').all();
     expect(bunIngredients.length).toBeGreaterThan(0);
 
-    // Кликаем на первую булку (кнопка добавления находится внутри элемента)
+    // Получаем текст имени булки перед добавлением
+    const bunNameText = await bunIngredients[0].locator('p').last().textContent();
+
+    // Кликаем на кнопку добавления
     const addButton = bunIngredients[0].locator('button:has-text("Добавить")');
     await addButton.click();
 
     // Проверяем, что булка добавлена в конструктор
-    await page.waitForSelector('[data-testid="constructor-bun"]', {
+    await page.waitForSelector('[data-testid="constructor-bun-top"]', {
       timeout: 5000
     });
 
-    const bunInConstructor = await page.locator('[data-testid="constructor-bun"]');
-    await expect(bunInConstructor).toBeVisible();
+    // Проверяем что верхняя булка видима и содержит правильное имя
+    const bunTopInConstructor = await page.locator('[data-testid="constructor-bun-top"]');
+    await expect(bunTopInConstructor).toBeVisible();
+    await expect(bunTopInConstructor).toContainText(bunNameText || '');
+
+    // Проверяем что нижняя булка тоже видима
+    const bunBottomInConstructor = await page.locator('[data-testid="constructor-bun-bottom"]');
+    await expect(bunBottomInConstructor).toBeVisible();
+    await expect(bunBottomInConstructor).toContainText(bunNameText || '');
   });
 
   test('should add filling ingredient to constructor', async ({ page }) => {
@@ -55,6 +65,9 @@ test.describe('Burger Constructor Page', () => {
     const mainIngredients = await page.locator('[data-testid="burger-ingredient"][data-type="main"]').all();
     expect(mainIngredients.length).toBeGreaterThan(0);
 
+    // Получаем имя ингредиента
+    const mainNameText = await mainIngredients[0].locator('p').last().textContent();
+
     // Кликаем на кнопку добавления начинки
     const addButton = mainIngredients[0].locator('button:has-text("Добавить")');
     await addButton.click();
@@ -66,6 +79,9 @@ test.describe('Burger Constructor Page', () => {
 
     const ingredientsInConstructor = await page.locator('[data-testid="constructor-ingredient"]').all();
     expect(ingredientsInConstructor.length).toBeGreaterThan(0);
+
+    // Проверяем что добавленный ингредиент имеет правильное имя
+    await expect(ingredientsInConstructor[0]).toContainText(mainNameText || '');
   });
 
   test('should add sauce ingredient to constructor', async ({ page }) => {
@@ -78,6 +94,9 @@ test.describe('Burger Constructor Page', () => {
     const sauceIngredients = await page.locator('[data-testid="burger-ingredient"][data-type="sauce"]').all();
     expect(sauceIngredients.length).toBeGreaterThan(0);
 
+    // Получаем имя соуса
+    const sauceNameText = await sauceIngredients[0].locator('p').last().textContent();
+
     // Кликаем на кнопку добавления соуса
     const addButton = sauceIngredients[0].locator('button:has-text("Добавить")');
     await addButton.click();
@@ -89,6 +108,9 @@ test.describe('Burger Constructor Page', () => {
 
     const ingredientsInConstructor = await page.locator('[data-testid="constructor-ingredient"]').all();
     expect(ingredientsInConstructor.length).toBeGreaterThan(0);
+
+    // Проверяем что добавленный ингредиент имеет правильное имя
+    await expect(ingredientsInConstructor[0]).toContainText(sauceNameText || '');
   });
 
   test('should open ingredient details modal', async ({ page }) => {
@@ -97,17 +119,24 @@ test.describe('Burger Constructor Page', () => {
       timeout: 5000
     });
 
+    // Получаем имя первого ингредиента ДО клика
+    const firstIngredient = await page.locator('[data-testid="burger-ingredient"]').first();
+    const ingredientNameBeforeClick = await firstIngredient.locator('p').last().textContent();
+
     // Кликаем на ингредиент (на ссылку), чтобы открыть модальное окно
-    const firstIngredient = await page.locator('[data-testid="burger-ingredient"] a').first();
-    await firstIngredient.click();
+    const ingredientLink = await firstIngredient.locator('a').first();
+    await ingredientLink.click();
 
     // Проверяем, что модальное окно открыто
-    const modal = await page.locator('[data-testid="ingredient-details-modal"]');
-    await expect(modal).toBeVisible();
+    const ingredientDetailsModal = await page.locator('[data-testid="ingredient-details-modal"]');
+    await expect(ingredientDetailsModal).toBeVisible();
 
     // Проверяем, что в модальном окне отображаются детали ингредиента
     const ingredientName = await page.locator('[data-testid="ingredient-name"]');
     await expect(ingredientName).toBeVisible();
+
+    // Проверяем что имя в модали совпадает с именем, по которому кликнули
+    await expect(ingredientName).toHaveText(ingredientNameBeforeClick || '');
   });
 
   test('should close modal by clicking close button', async ({ page }) => {

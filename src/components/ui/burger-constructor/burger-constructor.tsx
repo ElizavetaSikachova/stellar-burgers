@@ -22,7 +22,7 @@ export const BurgerConstructorUI: FC<BurgerConstructorUIProps> = ({
     {constructorItems.bun ? (
       <div
         className={`${styles.element} mb-4 mr-4`}
-        data-testid='constructor-bun'
+        data-testid='constructor-bun-top'
       >
         <ConstructorElement
           type='top'
@@ -63,7 +63,7 @@ export const BurgerConstructorUI: FC<BurgerConstructorUIProps> = ({
     {constructorItems.bun ? (
       <div
         className={`${styles.element} mt-4 mr-4`}
-        data-testid='constructor-bun'
+        data-testid='constructor-bun-bottom'
       >
         <ConstructorElement
           type='bottom'
