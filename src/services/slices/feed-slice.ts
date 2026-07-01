@@ -20,9 +20,7 @@ const initialFeedState: FeedState = {
   newOrderId: null
 };
 
-export const getFeeds = createAsyncThunk('feed/getFeeds', async () =>
-  getFeedsApi()
-);
+export const getFeeds = createAsyncThunk('feed/getFeeds', async () => getFeedsApi());
 
 const feedSlice = createSlice({
   name: 'feed',
