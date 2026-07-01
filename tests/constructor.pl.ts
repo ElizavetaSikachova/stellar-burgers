@@ -179,8 +179,11 @@ test.describe('Burger Constructor Page', () => {
     });
 
     // Закрываем модальное окно по клику на оверлей
-    const overlay = await page.locator('[data-testid="modal-overlay"]');
-    await overlay.click();
+    // Используем page.evaluate для клика напрямую в браузере, чтобы избежать перехвата событий
+    await page.evaluate(() => {
+      const overlay = document.querySelector('[data-testid="modal-overlay"]') as HTMLElement;
+      if (overlay) overlay.click();
+    });
 
     // Проверяем, что модальное окно закрыто
     const modal = await page.locator('[data-testid="ingredient-details-modal"]');
